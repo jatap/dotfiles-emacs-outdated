@@ -138,6 +138,43 @@
   (ivy-mode 1))
 
 ;; -----------------------------------------------------------------------------
+;; ivy-rich
+;; -----------------------------------------------------------------------------
+(use-package ivy-rich
+  :after ivy
+  :init
+  (ivy-rich-mode 1))
+
+;; -----------------------------------------------------------------------------
+;; counsel
+;; -----------------------------------------------------------------------------
+(use-package counsel
+  :bind (("C-M-j" . 'counsel-switch-buffer)
+         :map minibuffer-local-map
+         ("C-r" . 'counsel-minibuffer-history))
+  :custom
+  (counsel-linux-app-format-function #'counsel-linux-app-format-function-name-only)
+  :config
+  (counsel-mode 1))
+
+;; -----------------------------------------------------------------------------
+;; ivy-prescient
+;; -----------------------------------------------------------------------------
+(use-package ivy-prescient
+  :after counsel
+  :custom
+  (ivy-prescient-enable-filtering nil)
+  :config
+  ;; Uncomment the following line to have sorting remembered across sessions!
+  ;(prescient-persist-mode 1)
+  (ivy-prescient-mode 1))
+
+;; -----------------------------------------------------------------------------
+;; swiper
+;; -----------------------------------------------------------------------------
+(use-package swiper)
+
+;; -----------------------------------------------------------------------------
 ;; all-the-icons
 ;; -----------------------------------------------------------------------------
 (use-package all-the-icons)
@@ -151,3 +188,16 @@
 ;(use-package general
 ;  :config
 ;  (general-evil-setup t))
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   '(ivy-prescient counsel ivy-rich swiper use-package ivy general evil-collection doom-themes doom-modeline command-log-mode)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
