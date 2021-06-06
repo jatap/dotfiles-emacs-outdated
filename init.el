@@ -168,6 +168,9 @@
 (use-package visual-fill-column
   :hook (org-mode . efs/org-mode-visual-fill))
 
+(use-package evil-nerd-commenter
+  :bind ("M-/" . evilnc-comment-or-uncomment-lines))
+
 ;; -----------------------------------------------------------------------------
 ;; Modeline
 ;; -----------------------------------------------------------------------------
