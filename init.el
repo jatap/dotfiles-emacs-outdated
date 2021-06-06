@@ -291,13 +291,24 @@
 (use-package forge
   :after magit)
 
+;; -----------------------------------------------------------------------------
+;; Shell
+;; -----------------------------------------------------------------------------
+
+(use-package vterm
+  :commands vterm
+  :config
+  (setq term-prompt-regexp "^[^#$%>\n]*[#$%>] *")  ;; Set this to match your custom shell prompt
+  ;;(setq vterm-shell "zsh")                       ;; Set this to customize the shell to launch
+  (setq vterm-max-scrollback 10000))
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(visual-fill-column forge magic-delta hydra exec-path-from-shell helpful which-key rainbow-delimiters ivy-prescient counsel ivy-rich swiper use-package ivy general evil-collection doom-themes doom-modeline command-log-mode)))
+   '(vterm visual-fill-column forge magic-delta hydra exec-path-from-shell helpful which-key rainbow-delimiters ivy-prescient counsel ivy-rich swiper use-package ivy general evil-collection doom-themes doom-modeline command-log-mode)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
