@@ -1,18 +1,54 @@
 ;; -----------------------------------------------------------------------------
+;; System Configuration
+;; -----------------------------------------------------------------------------
+
+;; exec-path-from-shell
+(when (memq window-system '(mac ns x))
+  (exec-path-from-shell-initialize))
+(when (daemonp)
+  (exec-path-from-shell-initialize))
+
+;; -----------------------------------------------------------------------------
+;; Basic UI Configuration
+;; -----------------------------------------------------------------------------
+
+(setq inhibit-startup-message t)
+
+(scroll-bar-mode -1)        ; Disable visible scrollbar
+(tool-bar-mode -1)          ; Disable the toolbar
+(tooltip-mode -1)           ; Disable tooltips
+(set-fringe-mode 10)        ; Give some breathing room
+
+(menu-bar-mode -1)          ; Disable the menu bar
+
+;; modeline
+(column-number-mode)        ; Show column number in the modeline
+(global-display-line-numbers-mode 0)
+
+; Disable line numbers for some modes
+;; (dolist (mode '(org-mode-hook
+;; 		term-mode-hook
+;; 		shell-mode-hook
+;; 		eshell-mode-hook))
+;;   (add-hook mode (lambda () (display-line-numbers-mode 0))))
+
+;; -----------------------------------------------------------------------------
 ;; Fonts
 ;; -----------------------------------------------------------------------------
+
 (set-face-attribute 'default nil
   :font "VictorMono Nerd Font"
-  :height 130
+  :height 120
   :weight 'medium)
 (set-face-attribute 'variable-pitch nil
   :font "VictorMono Nerd Font"
-  :height 140
+  :height 130
   :weight 'medium)
 (set-face-attribute 'fixed-pitch nil
   :font "VictorMono Nerd Font"
-  :height 130
+  :height 120
   :weight 'medium)
+
 ;; Makes commented text and keywords italics.
 ;; This is working in emacsclient but not emacs.
 ;; Your font must have an italic face available.
@@ -26,36 +62,10 @@
 ;; changes certain keywords to symbols, such as lamda!
 (setq global-prettify-symbols-mode t)
 
-;; Uncomment the following line if line spacing needs adjusting.
-;(setq-default line-spacing 0.12)
-
 ;; -----------------------------------------------------------------------------
-;; Benchmarks
+;; Package Manager Configuration
 ;; -----------------------------------------------------------------------------
-(defun efs/display-startup-time ()
-  (message "Emacs loaded in %s with %d garbage collections."
-           (format "%.2f seconds"
-                   (float-time
-                     (time-subtract after-init-time before-init-time)))
-           gcs-done))
 
-(add-hook 'emacs-startup-hook #'efs/display-startup-time)
-
-;; -----------------------------------------------------------------------------
-;; UI settings
-;; -----------------------------------------------------------------------------
-(setq inhibit-startup-message t)
-
-(scroll-bar-mode -1)        ; Disable visible scrollbar
-(tool-bar-mode -1)          ; Disable the toolbar
-(tooltip-mode -1)           ; Disable tooltips
-(set-fringe-mode 10)        ; Give some breathing room
-
-(menu-bar-mode -1)            ; Disable the menu bar
-
-;; -----------------------------------------------------------------------------
-;; Packages
-;; -----------------------------------------------------------------------------
 ;; Initialize package sources
 (require 'package)
 
@@ -75,15 +85,101 @@
 (setq use-package-always-ensure t)
 
 ;; -----------------------------------------------------------------------------
-;; doom-modeline
+;; Ivy Ecosystem
 ;; -----------------------------------------------------------------------------
-(use-package doom-modeline
-  :init (doom-modeline-mode 1)
-  :custom ((doom-modeline-height 35)))
+
+(use-package ivy
+  :diminish
+  :bind (("C-s" . swiper)
+         :map ivy-minibuffer-map
+         ("TAB" . ivy-alt-done)	
+         ("C-l" . ivy-alt-done)
+         ("C-j" . ivy-next-line)
+         ("C-k" . ivy-previous-line)
+         :map ivy-switch-buffer-map
+         ("C-k" . ivy-previous-line)
+         ("C-l" . ivy-done)
+         ("C-d" . ivy-switch-buffer-kill)
+         :map ivy-reverse-i-search-map
+         ("C-k" . ivy-previous-line)
+         ("C-d" . ivy-reverse-i-search-kill))
+  :init
+  (setq ivy-height 20)
+  :config
+  (ivy-mode 1))
+
+;; NOTE: The first time you load your configuration on a new machine, you'll
+;; need to run the following command interactively so that mode line icons
+;; display correctly:
+;;
+;; M-x all-the-icons-install-fonts
+
+(use-package all-the-icons)
+
+(use-package ivy-rich
+  :after ivy
+  :init
+  (ivy-rich-mode 1))
+
+(use-package counsel
+  :bind (("M-x" . counsel-M-x)
+	 ("C-x b" . counsel-switch-buffer)
+	 ("C-M-j" . counsel-ibuffer)
+	 ("C-x C-f" . counsel-find-file) 
+         :map minibuffer-local-map
+         ("C-r" . 'counsel-minibuffer-history))
+  :config
+  (setq ivy-initial-inputs-alist nil)
+  (counsel-mode 1))
+
+(use-package ivy-prescient
+  :after counsel
+  :custom
+  (ivy-prescient-enable-filtering nil)
+  :config
+  ;; Have sorting remembered across sessions!
+  (prescient-persist-mode 1)
+  (ivy-prescient-mode 1))
+
+(use-package swiper)
 
 ;; -----------------------------------------------------------------------------
-;; doom-themes
+;; Buffers
 ;; -----------------------------------------------------------------------------
+
+(use-package helpful
+  :commands (helpful-callable helpful-variable helpful-command helpful-key)
+  :custom
+  (counsel-describe-function-function #'helpful-callable)
+  (counsel-describe-variable-function #'helpful-variable)
+  :bind
+  ([remap describe-function] . counsel-describe-function)
+  ([remap describe-command] . helpful-command)
+  ([remap describe-variable] . counsel-describe-variable)
+  ([remap describe-key] . helpful-key))
+
+;; -----------------------------------------------------------------------------
+;; Editor
+;; -----------------------------------------------------------------------------
+
+(use-package rainbow-delimiters
+  :hook (prog-mode . rainbow-delimiters-mode))
+
+(use-package visual-fill-column
+  :hook (org-mode . efs/org-mode-visual-fill))
+
+;; -----------------------------------------------------------------------------
+;; Modeline
+;; -----------------------------------------------------------------------------
+
+(use-package doom-modeline
+  :init (doom-modeline-mode 1)
+  :custom ((doom-modeline-height 15)))
+
+;; -----------------------------------------------------------------------------
+;; Themes
+;; -----------------------------------------------------------------------------
+
 (use-package doom-themes
   :config
   ;; Global settings (defaults)
@@ -102,99 +198,106 @@
   (doom-themes-org-config))
 
 ;; -----------------------------------------------------------------------------
-;; evil
+;; Key Binding Configuration
 ;; -----------------------------------------------------------------------------
+
+(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+
 (use-package evil
   :init                             ;; tweak evil's configuration before loading it
   (setq evil-want-integration t)    ;; This is optional since it's already set to t by default
   (setq evil-want-keybinding nil)
+  (setq evil-want-C-u-scroll t)
+  (setq evil-want-Y-yank-to-eol t)
   (setq evil-vsplit-window-right t)
   (setq evil-split-window-below t)
-  (evil-mode))
+  :config
+  (evil-mode 1)
+  (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
+  (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join))
+
 (use-package evil-collection
   :after evil
   :config
   (evil-collection-init))
 
-;; -----------------------------------------------------------------------------
-;; ivy
-;; -----------------------------------------------------------------------------
-(use-package ivy
-  :diminish
-  :bind (("C-s" . swiper)
-         :map ivy-minibuffer-map
-         ("TAB" . ivy-alt-done)	
-         ("C-l" . ivy-alt-done)
-         ("C-j" . ivy-next-line)
-         ("C-k" . ivy-previous-line)
-         :map ivy-switch-buffer-map
-         ("C-k" . ivy-previous-line)
-         ("C-l" . ivy-done)
-         ("C-d" . ivy-switch-buffer-kill)
-         :map ivy-reverse-i-search-map
-         ("C-k" . ivy-previous-line)
-         ("C-d" . ivy-reverse-i-search-kill))
+(use-package which-key
+  :init (which-key-mode)
+  :diminish which-key-mode
   :config
-  (ivy-mode 1))
+  (setq which-key-idle-delay 0.3)) 
+
+(use-package general
+  :after evil
+  :config
+  (general-evil-setup t)
+
+  (general-create-definer jatap/leader-keys
+    :keymaps '(normal insert visual emacs)
+    :prefix "SPC"
+    :global-prefix "C-SPC")
+
+  (jatap/leader-keys
+   "a" '(counsel-projectile-rg :which-key "search")
+   "*" '(swiper-all-thing-at-point :which-key "search *")
+   "," '(counsel-find-file :which-key "find-file")
+   "b" '(counsel-projectile-switch-to-buffer :which-key "buffers")
+   "B" '(counsel-switch-buffer :which-key "buffers")
+   "w" '(save-buffer :which-key "save buffer")
+   "j" '(bury-buffer :which-key "bury buffer")
+   "q" '(kill-current-buffer :which-key "close buffer")))
+
+(use-package hydra)
+
+(defhydra hydra-text-scale (:timeout 4)
+  "scale text"
+  ("j" text-scale-increase "in")
+  ("k" text-scale-decrease "out")
+  ("f" nil "finished" :exit t))
+
+(jatap/leader-keys
+  "ts" '(hydra-text-scale/body :which-key "scale text"))
 
 ;; -----------------------------------------------------------------------------
-;; ivy-rich
+;; Projectile Ecosystem
 ;; -----------------------------------------------------------------------------
-(use-package ivy-rich
-  :after ivy
+
+(use-package projectile
+  :diminish projectile-mode
+  :config (projectile-mode)
+  :custom ((projectile-completion-system 'ivy))
+  :bind-keymap
+  ("C-c p" . projectile-command-map)
   :init
-  (ivy-rich-mode 1))
+  ;; NOTE: Set this to the folder where you keep your Git repos!
+  (when (file-directory-p "~/Projects")
+    (setq projectile-project-search-path '("~/Projects")))
+  (setq projectile-switch-project-action #'projectile-dired))
+
+(use-package counsel-projectile
+  :config (counsel-projectile-mode))
 
 ;; -----------------------------------------------------------------------------
-;; counsel
+;; Magit Ecosystem
 ;; -----------------------------------------------------------------------------
-(use-package counsel
-  :bind (("C-M-j" . 'counsel-switch-buffer)
-         :map minibuffer-local-map
-         ("C-r" . 'counsel-minibuffer-history))
+
+(use-package magit
+  :commands magit-status
   :custom
-  (counsel-linux-app-format-function #'counsel-linux-app-format-function-name-only)
-  :config
-  (counsel-mode 1))
+  (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 
-;; -----------------------------------------------------------------------------
-;; ivy-prescient
-;; -----------------------------------------------------------------------------
-(use-package ivy-prescient
-  :after counsel
-  :custom
-  (ivy-prescient-enable-filtering nil)
-  :config
-  ;; Uncomment the following line to have sorting remembered across sessions!
-  ;(prescient-persist-mode 1)
-  (ivy-prescient-mode 1))
+;; https://magit.vc/manual/forge/Token-Creation.html#Token-Creation
+;; https://magit.vc/manual/ghub/Getting-Started.html#Getting-Started
+(use-package forge
+  :after magit)
 
-;; -----------------------------------------------------------------------------
-;; swiper
-;; -----------------------------------------------------------------------------
-(use-package swiper)
-
-;; -----------------------------------------------------------------------------
-;; all-the-icons
-;; -----------------------------------------------------------------------------
-(use-package all-the-icons)
-
-;; -----------------------------------------------------------------------------
-;; Keymaps
-;; -----------------------------------------------------------------------------
-(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
-
-;; General keybindings
-;(use-package general
-;  :config
-;  (general-evil-setup t))
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(ivy-prescient counsel ivy-rich swiper use-package ivy general evil-collection doom-themes doom-modeline command-log-mode)))
+   '(visual-fill-column forge magic-delta hydra exec-path-from-shell helpful which-key rainbow-delimiters ivy-prescient counsel ivy-rich swiper use-package ivy general evil-collection doom-themes doom-modeline command-log-mode)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

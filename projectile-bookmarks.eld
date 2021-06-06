@@ -1,0 +1,1 @@
+("~/.config/emacs/" "~/Projects/DevOps/" "~/Projects/content/" "/Volumes/Samsung_T5/Users/julio/JavaScript/Libraries/dirty/js-tpl/" "~/.vim/" "~/dotfiles/" "~/.zsh/")
