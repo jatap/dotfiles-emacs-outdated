@@ -3,6 +3,8 @@ auto-save-list/
 transient/
 var/
 .cache/
+straight/
+todo.org
 .lsp-session-*
 projectile-bookmarks.eld
 *~
