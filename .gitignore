@@ -4,7 +4,9 @@ transient/
 var/
 .cache/
 straight/
+eshell/
 todo.org
 .lsp-session-*
 projectile-bookmarks.eld
+bookmarks
 *~
